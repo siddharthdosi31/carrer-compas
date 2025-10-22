@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Compass AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        #resume-section, #roadmap-section, #loader, #resume-results, #roadmap-results {
+            display: none;
+        }
+        .progress-circle {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(#667eea 0deg, #e0e0e0 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 1s ease-in-out;
+        }
+        .progress-circle-inner {
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Career Compass AI</a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="index.html" class="text-gray-600 hover:text-indigo-600">Home</a>
+                <a href="about.html" class="text-gray-600 hover:text-indigo-600">About</a>
+                <a href="services.html" class="text-gray-600 hover:text-indigo-600">Services</a>
+                <a href="contact.html" class="text-gray-600 hover:text-indigo-600">Contact</a>
+            </div>
+            <a href="login.html" class="hidden md:block bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition">Login</a>
+            <button class="md:hidden" id="mobile-menu-button">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div class="hidden md:hidden" id="mobile-menu">
+            <a href="index.html" class="block py-2 px-4 text-sm hover:bg-gray-200">Home</a>
+            <a href="about.html" class="block py-2 px-4 text-sm hover:bg-gray-200">About</a>
+            <a href="services.html" class="block py-2 px-4 text-sm hover:bg-gray-200">Services</a>
+            <a href="contact.html" class="block py-2 px-4 text-sm hover:bg-gray-200">Contact</a>
+            <a href="login.html" class="block py-2 px-4 text-sm hover:bg-gray-200">Login</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="home-section">
+            <div class="hero-section text-white text-center py-20 px-8 rounded-2xl mb-16">
+                <h1 class="text-5xl font-bold mb-4">Chart Your Course to a Dream Career</h1>
+                <p class="text-xl max-w-3xl mx-auto">Leverage AI to refine your resume, discover personalized career paths, and unlock your full potential.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-10">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card" onclick="showResume()">
+                    <img src="https://images.unsplash.com/photo-1549923746-5c02d488b3ea?q=80&w=2071&auto-format&fit=crop" alt="Resume Guidance" class="w-full h-56 object-cover">
+                    <div class="p-8">
+                        <h2 class="text-3xl font-bold mb-3">Resume Guidance</h2>
+                        <p class="text-gray-600 text-lg">Get AI-powered feedback to align your resume with your career goals and stand out to employers.</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card" onclick="showRoadmap()">
+                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto-format&fit=crop" alt="Career Roadmap" class="w-full h-56 object-cover">
+                    <div class="p-8">
+                        <h2 class="text-3xl font-bold mb-3">Career Roadmap</h2>
+                        <p class="text-gray-600 text-lg">Discover personalized career paths and the skills you need to succeed based on your unique interests.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="resume-section">
+            <div class="max-w-4xl mx-auto bg-white p-10 rounded-2xl shadow-2xl">
+                <div id="resume-form-container">
+                    <h2 class="text-4xl font-bold text-center mb-6">Resume Guidance</h2>
+                    <p class="text-center text-gray-600 mb-8 text-lg">Upload your resume and tell us your career goal. Our AI will do the rest.</p>
+                    <form id="resume-form" class="space-y-6">
+                        <div>
+                            <label for="resume-file" class="block text-lg font-medium text-gray-700 mb-2">Upload Your Resume (PDF, 2MB max)</label>
+                            <input type="file" id="resume-file" accept=".pdf" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="career-goal" class="block text-lg font-medium text-gray-700 mb-2">Desired Career Goal</label>
+                            <input type="text" id="career-goal" placeholder="e.g., Senior Software Engineer" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label for="job-location" class="block text-lg font-medium text-gray-700 mb-2">Preferred Job Location</label>
+                            <input type="text" id="job-location" placeholder="e.g., San Francisco, CA" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-4 px-8 rounded-lg hover:opacity-90 transition text-lg">Analyze My Resume</button>
+                    </form>
+                </div>
+                <div id="resume-results" class="mt-8"></div>
+            </div>
+        </section>
+
+        <section id="roadmap-section">
+             <div class="max-w-4xl mx-auto bg-white p-10 rounded-2xl shadow-2xl">
+                <div id="roadmap-intro">
+                    <h2 class="text-4xl font-bold text-center mb-4">Create Your Personalized Career Roadmap</h2>
+                    <p class="text-center text-gray-600 mb-8 text-lg">Answer a few questions to get a customized, AI-generated roadmap to your dream career.</p>
+                    <button id="start-roadmap-btn" class="block mx-auto bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-4 px-8 rounded-lg hover:opacity-90 transition text-lg">Build My Roadmap</button>
+                </div>
+                <div id="roadmap-questionnaire" class="hidden"></div>
+                 <div id="roadmap-results" class="mt-8"></div>
+            </div>
+        </section>
+
+        <div id="loader" class="text-center py-12">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600 mx-auto"></div>
+            <p class="mt-4 text-lg font-semibold">AI is analyzing your input... Please wait.</p>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Career Compass AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="custom-alert" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <p id="alert-message" class="mb-4"></p>
+            <button onclick="closeAlert()" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = "AIzaSyBtSH0FXuOBvOqKWABN4G1PPx0CKzGmejk"; 
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+        const homeSection = document.getElementById('home-section');
+        const resumeSection = document.getElementById('resume-section');
+        const roadmapSection = document.getElementById('roadmap-section');
+        const loader = document.getElementById('loader');
+        const customAlert = document.getElementById('custom-alert');
+        const alertMessage = document.getElementById('alert-message');
+
+        const resumeFormContainer = document.getElementById('resume-form-container');
+        const resumeForm = document.getElementById('resume-form');
+        const resumeFileInput = document.getElementById('resume-file');
+        const resumeResultsContainer = document.getElementById('resume-results');
+        
+        const roadmapIntro = document.getElementById('roadmap-intro');
+        const startRoadmapBtn = document.getElementById('start-roadmap-btn');
+        const roadmapQuestionnaireContainer = document.getElementById('roadmap-questionnaire');
+        const roadmapResultsContainer = document.getElementById('roadmap-results');
+
+        function showAlert(message) {
+            alertMessage.textContent = message;
+            customAlert.classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            customAlert.classList.add('hidden');
+        }
+
+        function hideAllSections() {
+            homeSection.style.display = 'none';
+            resumeSection.style.display = 'none';
+            roadmapSection.style.display = 'none';
+            loader.style.display = 'none';
+        }
+
+        function showHome() {
+            hideAllSections();
+            homeSection.style.display = 'block';
+        }
+
+        function showResume() {
+            hideAllSections();
+            resumeSection.style.display = 'block';
+            resetResumePage();
+        }
+
+        function showRoadmap() {
+            hideAllSections();
+            roadmapSection.style.display = 'block';
+            resetRoadmapPage();
+        }
+        
+        function resetResumePage() {
+            resumeForm.reset();
+            resumeFormContainer.style.display = 'block';
+            resumeResultsContainer.innerHTML = '';
+            resumeResultsContainer.style.display = 'none';
+        }
+        
+        function resetRoadmapPage() {
+            roadmapIntro.style.display = 'block';
+            roadmapQuestionnaireContainer.innerHTML = '';
+            roadmapQuestionnaireContainer.classList.add('hidden');
+            roadmapResultsContainer.innerHTML = '';
+            roadmapResultsContainer.style.display = 'none';
+            currentQuestionIndex = 0;
+        }
+
+        async function getResumeText(file) {
+            const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+                reader.onload = async (event) => {
+                    try {
+                        const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise;
+                        let textContent = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const text = await page.getTextContent();
+                            textContent += text.items.map(s => s.str).join(' ');
+                        }
+                        resolve(textContent);
+                    } catch (error) {
+                        console.error("PDF Parsing Error:", error);
+                        reject('Error parsing PDF file. Please ensure it is a valid PDF.');
+                    }
+                };
+                reader.onerror = () => reject('Error reading file.');
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function callGemini(prompt) {
+             try {
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Body:", errorBody);
+                    throw new Error(`API Error: ${response.status} ${response.statusText}. ${errorBody?.error?.message || 'Unknown error.'}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.candidates || !data.candidates[0].content || !data.candidates[0].content.parts) {
+                    throw new Error("Invalid response structure from AI. The AI may be overloaded.");
+                }
+
+                let jsonString = data.candidates[0].content.parts[0].text;
+                if (jsonString.startsWith("'''json")) {
+                    jsonString = jsonString.substring(7, jsonString.length - 3).trim();
+                } else if (jsonString.startsWith("'''")) {
+                    jsonString = jsonString.substring(3, jsonString.length - 3).trim();
+                }
+
+                return JSON.parse(jsonString);
+
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                return { error: `Failed to get response from AI. ${error.message}` };
+            }
+        }
+        
+        resumeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = resumeFileInput.files[0];
+            const careerGoal = document.getElementById('career-goal').value;
+            const location = document.getElementById('job-location').value;
+
+            if (!file) {
+                showAlert("Please upload a resume file.");
+                return;
+            }
+
+            const maxSize = 2 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showAlert("Please upload a file smaller than 2MB.");
+                resumeFileInput.value = '';
+                return;
+            }
+
+            resumeFormContainer.style.display = 'none';
+            loader.style.display = 'block';
+            resumeResultsContainer.style.display = 'none';
+
+            try {
+                const resumeText = await getResumeText(file);
+                
+                const prompt = `
+                    Analyze the following resume text for a person targeting a "${careerGoal}" role in "${location}".
+                    Resume Text: "${resumeText}"
+
+                    Provide a detailed analysis in a single, clean JSON object with the following keys:
+                    - "matchPercentage": An integer from 0 to 100 representing how well the resume matches the career goal.
+                    - "skillGaps": An array of strings listing critical skills missing for the target role.
+                    - "learningResources": An array of objects, each with "skill", "resourceName" (e.g., "Udemy", "Coursera"), "resourceUrl" (a URL to the learning platform), and "resourceDescription" (a brief sentence on why this resource is recommended, mentioning a specific course if possible).
+                    - "experienceProjects": An array of strings suggesting projects to build experience.
+                    - "jobSuggestions": An array of objects, each with "title" and "link" (a pre-populated job search URL on LinkedIn or Indeed for the specified location).
+                    - "summary": A brief, encouraging summary of the analysis.
+                `;
+                
+                const result = await callGemini(prompt);
+                renderResumeResults(result);
+
+            } catch (error) {
+                console.error(error);
+                resumeResultsContainer.innerHTML = `<p class="text-red-500 text-center">${error}</p>`;
+            } finally {
+                loader.style.display = 'none';
+                resumeResultsContainer.style.display = 'block';
+            }
+        });
+
+        function renderResumeResults(data) {
+            if (data.error) {
+                resumeResultsContainer.innerHTML = `<p class="text-red-500 text-center p-4 bg-red-50 rounded-lg">${data.error}</p>`;
+                return;
+            }
+
+            const { matchPercentage, skillGaps, learningResources, experienceProjects, jobSuggestions, summary } = data;
+            
+            let html = `
+                <h2 class="text-3xl font-bold text-center mb-8">Your Resume Analysis</h2>
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="md:col-span-1 flex flex-col items-center justify-center bg-gray-100 p-6 rounded-lg">
+                        <div class="progress-circle" id="progress-circle">
+                            <div class="progress-circle-inner">${matchPercentage}%</div>
+                        </div>
+                        <p class="mt-4 text-lg font-semibold">Career Goal Match</p>
+                    </div>
+                    <div class="md:col-span-2 bg-indigo-50 p-6 rounded-lg flex items-center">
+                        <div>
+                            <h3 class="text-xl font-bold mb-3 text-indigo-800">AI Summary</h3>
+                            <p class="text-lg">${summary}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-xl font-bold mb-4 border-b pb-2">Skill Gaps to Address</h3><ul class="list-disc list-inside space-y-2 text-lg">${skillGaps.map(gap => `<li>${gap}</li>`).join('')}</ul></div>
+                    <div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-xl font-bold mb-4 border-b pb-2">Experience-Building Projects</h3><ul class="list-disc list-inside space-y-2 text-lg">${experienceProjects.map(proj => `<li>${proj}</li>`).join('')}</ul></div>
+                    <div class="bg-white p-6 rounded-lg shadow-md col-span-2"><h3 class="text-xl font-bold mb-4 border-b pb-2">Suggested Job Searches</h3><ul class="space-y-3 text-lg">${jobSuggestions.map(job => `<li><a href="${job.link}" target="_blank" class="text-indigo-600 hover:underline">${job.title}</a></li>`).join('')}</ul></div>
+                </div>
+
+                <div class="mt-10 bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold mb-6 text-center">Your Personalized Learning Plan</h3>
+                    <div class="space-y-6">
+                        ${learningResources.map(res => `
+                            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 transition-shadow hover:shadow-md">
+                                <h4 class="font-bold text-xl text-indigo-700">${res.skill}</h4>
+                                <p class="mt-1 text-gray-600 text-lg">${res.resourceDescription}</p>
+                                <a href="${res.resourceUrl}" target="_blank" class="inline-block mt-3 bg-indigo-100 text-indigo-800 font-semibold py-2 px-4 rounded-lg hover:bg-indigo-200 transition duration-300">
+                                    Learn at ${res.resourceName} &rarr;
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <button onclick="showResume()" class="mt-8 block mx-auto bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg hover:bg-gray-800 transition duration-300">Analyze Another Resume</button>
+            `;
+            resumeResultsContainer.innerHTML = html;
+            
+            const progressCircle = document.getElementById('progress-circle');
+            setTimeout(() => {
+                progressCircle.style.background = `conic-gradient(#667eea ${matchPercentage * 3.6}deg, #e0e0e0 0deg)`;
+            }, 100);
+        }
+
+        const roadmapQuestions = [
+            { id: 'interests', label: 'What are your primary interests or hobbies?', type: 'text', placeholder: 'e.g., Building apps, data analysis, creative design' },
+            { id: 'skills', label: 'What are your current top skills?', type: 'text', placeholder: 'e.g., JavaScript, Python, Project Management' },
+            { id: 'experience', label: 'Briefly describe your current experience level.', type: 'textarea', placeholder: 'e.g., Student with internship experience, 5 years in marketing, etc.' },
+            { id: 'location', label: 'What is your preferred work location?', type: 'text', placeholder: 'e.g., Remote, New York City' },
+            { id: 'timeline', label: 'In how many months do you want to complete this roadmap?', type: 'number', placeholder: 'e.g., 6' }
+        ];
+        let currentQuestionIndex = 0;
+
+        startRoadmapBtn.addEventListener('click', () => {
+            roadmapIntro.style.display = 'none';
+            roadmapQuestionnaireContainer.classList.remove('hidden');
+            displayQuestion();
+        });
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= roadmapQuestions.length) {
+                processRoadmapAnswers();
+                return;
+            }
+            const question = roadmapQuestions[currentQuestionIndex];
+            let inputHtml = question.type === 'textarea'
+                ? `<textarea id="${question.id}" placeholder="${question.placeholder}" class="w-full p-4 border border-gray-300 rounded-lg h-28 focus:ring-2 focus:ring-indigo-500 text-lg" required></textarea>`
+                : `<input type="${question.type}" id="${question.id}" placeholder="${question.placeholder}" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-lg" required>`;
+
+            roadmapQuestionnaireContainer.innerHTML = `
+                <div class="text-center">
+                    <p class="text-xl font-medium mb-4">${question.label} (${currentQuestionIndex + 1}/${roadmapQuestions.length})</p>
+                    ${inputHtml}
+                    <button id="next-question-btn" class="mt-6 bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-indigo-700 transition text-lg">Next</button>
+                </div>
+            `;
+            document.getElementById(question.id).focus();
+            document.getElementById('next-question-btn').addEventListener('click', () => {
+                const input = document.getElementById(question.id);
+                if (input.value.trim() === '') {
+                    showAlert('Please provide an answer.');
+                    return;
+                }
+                question.answer = input.value;
+                currentQuestionIndex++;
+                displayQuestion();
+            });
+        }
+
+        async function processRoadmapAnswers() {
+            roadmapQuestionnaireContainer.classList.add('hidden');
+            loader.style.display = 'block';
+
+            const answers = roadmapQuestions.reduce((acc, q) => ({ ...acc, [q.id]: q.answer }), {});
+            
+            const prompt = `
+                Based on the following user profile, create a detailed career roadmap.
+                - Interests: ${answers.interests}
+                - Skills: ${answers.skills}
+                - Experience: ${answers.experience}
+                - Location: ${answers.location}
+                - Desired Timeline: ${answers.timeline} months
+
+                Return a single, clean JSON object with these keys:
+                - "suggestedPath": A string with the recommended career path title (e.g., "Full-Stack Web Developer").
+                - "reason": A paragraph explaining why this path is a good fit.
+                - "salaryRange": A string representing the typical salary range for this role in the specified location (e.g., "$90,000 - $150,000 USD").
+                - "growthPotential": A short paragraph on the future outlook for this career.
+                - "jobSuggestions": An array of objects, each with "title" and "link" (a pre-populated job search URL).
+                - "roadmap": An array of objects, each representing a step with "step" (e.g., "Month 1-3"), "title", and "details" (a list of actions or topics to learn), tailored to the user's desired timeline.
+                - "suggestedTimeline": A string with a suggested realistic timeline to complete the roadmap (e.g., "8-12 months").
+            `;
+
+            const result = await callGemini(prompt);
+            renderRoadmapResults(result);
+            loader.style.display = 'none';
+            roadmapResultsContainer.style.display = 'block';
+        }
+
+        function renderRoadmapResults(data) {
+             if (data.error) {
+                roadmapResultsContainer.innerHTML = `<p class="text-red-500 text-center p-4 bg-red-50 rounded-lg">${data.error}</p>`;
+                return;
+            }
+
+            const { suggestedPath, reason, salaryRange, growthPotential, jobSuggestions, roadmap, suggestedTimeline } = data;
+
+            let html = `
+                <div id="pdf-content" class="p-4">
+                    <h2 class="text-4xl font-bold text-center mb-2">Your Career Roadmap: ${suggestedPath}</h2>
+                    <p class="text-center text-gray-600 mb-8 text-lg">A personalized plan to guide your next steps.</p>
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-indigo-50 p-6 rounded-lg"><h3 class="text-2xl font-bold mb-3 text-indigo-800">Why this path?</h3><p class="text-lg">${reason}</p></div>
+                        <div class="bg-gray-100 p-6 rounded-lg">
+                            <h3 class="text-2xl font-bold mb-3">Career Outlook</h3>
+                            <p class="text-lg"><strong>Salary Range:</strong> ${salaryRange}</p>
+                            <p class="mt-2 text-lg"><strong>Growth Potential:</strong> ${growthPotential}</p>
+                            <p class="mt-2 text-lg"><strong>Suggested Timeline:</strong> ${suggestedTimeline}</p>
+                        </div>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-6 text-center">Your Step-by-Step Plan</h3>
+                    <div class="relative border-l-4 border-indigo-200 ml-4 pl-8 space-y-10">
+                        ${roadmap.map(step => `
+                            <div class="relative">
+                                <div class="absolute -left-10 bg-indigo-600 h-5 w-5 rounded-full border-4 border-white" style="top: 0.25rem;"></div>
+                                <h4 class="font-bold text-2xl">${step.step}: ${step.title}</h4>
+                                <ul class="list-disc list-inside mt-2 text-gray-700 space-y-2 text-lg">${step.details.map(detail => `<li>${detail}</li>`).join('')}</ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="mt-8 text-center space-x-4">
+                    <button onclick="downloadRoadmapPDF()" class="bg-green-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-green-700 transition">Download as PDF</button>
+                    <button onclick="showRoadmap()" class="bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg hover:bg-gray-800 transition">Start Over</button>
+                </div>
+            `;
+            roadmapResultsContainer.innerHTML = html;
+        }
+        
+        function downloadRoadmapPDF() {
+            const { jsPDF } = window.jspdf;
+            const content = document.getElementById('pdf-content');
+            
+            showAlert('Generating PDF... Please wait.');
+
+            html2canvas(content, { 
+                scale: 2,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const ratio = canvasWidth / canvasHeight;
+                const imgWidth = pdfWidth;
+                const imgHeight = imgWidth / ratio;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+                }
+
+                pdf.save('Career-Roadmap.pdf');
+                closeAlert();
+            }).catch(err => {
+                console.error("Error generating PDF:", err);
+                showAlert("Sorry, there was an error creating the PDF.");
+            });
+        }
+
+        window.onload = () => {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+            showHome();
+        };
+
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileDropdownContainer = document.getElementById('profile-dropdown-container');
+
+        function toggleProfileDropdown() {
+            if (profileDropdown) {
+                profileDropdown.classList.toggle('hidden');
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            if (profileDropdownContainer && !profileDropdownContainer.contains(e.target)) {
+                if (profileDropdown) {
+                    profileDropdown.classList.add('hidden');
+                }
+            }
+        });
+    </script>
+    <script>
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+
+</body>
+</html>
